@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">WorkClock</string>
+    <string name="app_name" translatable="false">WorkClock</string>
+    <string name="edit_message">Enter a Message</string>
+    <string name="button_send">send</string>
 </resources>
