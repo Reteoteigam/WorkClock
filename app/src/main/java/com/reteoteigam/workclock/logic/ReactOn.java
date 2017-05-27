@@ -1,7 +1,5 @@
 package com.reteoteigam.workclock.logic;
 
-import android.util.Log;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +16,7 @@ public class ReactOn {
     private static final String DEFAULT = "No Information found";
     private static final String KNOWN_NAMES_FILE = "knownNames";
 
-    private Properties knownNames = new Properties();
+    private static Properties knownNames = new Properties();
 
     public ReactOn() {
 
@@ -29,7 +27,6 @@ public class ReactOn {
             InputStream inStream = fis;
             knownNames.load(inStream);
         } catch (FileNotFoundException e) {
-            Log.i(this.getClass(), )
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,7 +37,7 @@ public class ReactOn {
         String result = DEFAULT;
 
         if (knownNames.containsKey(message)) {
-            result = knownNames.get(message);
+            result = knownNames.get(message).toString();
         }
 
 
