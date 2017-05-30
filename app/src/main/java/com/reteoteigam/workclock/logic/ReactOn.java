@@ -1,10 +1,9 @@
 package com.reteoteigam.workclock.logic;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+
+import com.reteoteigam.workclock.MainActivity;
+import com.reteoteigam.workclock.logic.utils.PropertyUtils;
+
 import java.util.Properties;
 
 /**
@@ -14,34 +13,33 @@ import java.util.Properties;
 public class ReactOn {
 
     private static final String DEFAULT = "No Information found";
-    private static final String KNOWN_NAMES_FILE = "knownNames";
 
-    private static Properties knownNames = new Properties();
+    private Properties knownNames = null;
 
     public ReactOn() {
 
-        File knownNamesFile = new File(KNOWN_NAMES_FILE);
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(knownNamesFile);
-            InputStream inStream = fis;
-            knownNames.load(inStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        knownNames = PropertyUtils.loadProperties();
     }
 
-    public static String findInformationFor(String message) {
-        String result = DEFAULT;
+    public String findInformationFor(String message) {
+        String result = null;
 
-        if (knownNames.containsKey(message)) {
-            result = knownNames.get(message).toString();
+        int i = message.lastIndexOf(MainActivity.SPLITTER);
+        String key = message.substring(0, i);
+        String value = message.substring(i + MainActivity.SPLITTER.length(), message.length());
+
+
+        if (knownNames.containsKey(key)) {
+            result = knownNames.get(key).toString();
+        } else {
+            result = DEFAULT;
+            knownNames.put(key, value);
+            PropertyUtils.storeProperties(knownNames);
         }
-
-
+        result = key + "=" + value;
+//TODO change information
         return result;
-
     }
+
 }
+
