@@ -15,16 +15,14 @@ import android.widget.EditText;
 
 import com.reteoteigam.workclock.logic.utils.FileService;
 import com.reteoteigam.workclock.logic.utils.Logger;
+import com.reteoteigam.workclock.model.Booking;
+import com.reteoteigam.workclock.model.ModelService;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
-    public static final String SPLITTER = "RETEOTEIGAM";
     private static final int REQUESTCODE_STORAGE_PERMISSION = 0;
     private static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final int[] EXPECTED_GRANT_RESULTS = new int[]{0, 0};
@@ -105,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
     public void init() {
         File externalDir = this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         FileService.init(externalDir);
+        ModelService.loadModel();
     }
 
     public void sendMessage(View View) {
@@ -113,35 +112,17 @@ public class MainActivity extends AppCompatActivity {
         Logger.i(MainActivity.class, "sendMessage()");
         EditText name = (EditText) findViewById(R.id.name);
         EditText content = (EditText) findViewById(R.id.content);
-        String message = prepareData(name, content);
+        Booking booking = new Booking();
+        booking.setTime(System.currentTimeMillis());
+        booking.setName(name.getText().toString());
+        booking.setContent(content.getText().toString());
+        ModelService.add(booking);
+
         Intent intent = new Intent(this, DisplayMessageActivity.class);
-        intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
 
     }
 
-    private String prepareData(EditText... editText) {
-        //TODO auslagern
-        String result = "ticket";
-        int i = 0;
-        for (; i < editText.length - 1; i = i + 1) {
-
-            result = result + "." + editText[i].getText().toString();
-        }
-        //TODO change into a real pojo model system
-        if (editText.length - i > -1) {
-            result = result + SPLITTER + editText[i].getText().toString();
-        } else {
-            result = result + SPLITTER;
-        }
-
-        Date date = new Date(System.currentTimeMillis());
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-        String time = format.format(date);
-        result = time + "." + result;
-        return result;
-
-    }
 
     public void exit(View view) {
 

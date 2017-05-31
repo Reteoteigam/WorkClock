@@ -6,27 +6,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
-import com.reteoteigam.workclock.logic.ReactOn;
+import com.reteoteigam.workclock.model.Booking;
+import com.reteoteigam.workclock.model.ModelService;
 
 public class DisplayMessageActivity extends AppCompatActivity {
 
-    private ReactOn reactOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        reactOn = new ReactOn();
         setContentView(R.layout.activity_display_message);
 
 
-        // Get the Intent that started this activity and extract the string
-        Intent intent = getIntent();
-        String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-
-        message = reactOn.findInformationFor(message);
-        // Capture the layout's TextView and set the string as its text
+        ModelService.saveModel();
+        Booking currentBooking = ModelService.getLastBooking();
         TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText(message);
+        String text = ModelService.getPrintFrom(currentBooking);
+
+
+        textView.setText(text);
 
 
     }
@@ -36,8 +34,6 @@ public class DisplayMessageActivity extends AppCompatActivity {
         Intent intent = new Intent(this, EditorActivity.class);
         startActivity(intent);
     }
-
-
 
 
 }

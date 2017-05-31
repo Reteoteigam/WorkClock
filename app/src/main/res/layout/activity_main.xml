@@ -31,8 +31,8 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:hint="@string/edit_description"
-        android:inputType="textPersonName"
-        android:singleLine="false"
+        android:inputType="textMultiLine"
+        android:selectAllOnFocus="false"
         app:layout_constraintLeft_toLeftOf="@+id/name"
         app:layout_constraintRight_toRightOf="@+id/name"
         app:layout_constraintTop_toBottomOf="@+id/name" />
