@@ -18,10 +18,10 @@ public class DisplayMessageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_display_message);
 
 
-        ModelService.saveModel();
+        ModelService.saveModel(false);
         Booking currentBooking = ModelService.getLastBooking();
         TextView textView = (TextView) findViewById(R.id.textView);
-        String text = ModelService.getPrintFrom(currentBooking);
+        String text = ModelService.formatTimeToHHmm(currentBooking.getTime()) + "\n" + currentBooking.getName() + "\n" + currentBooking.getContent();
 
 
         textView.setText(text);

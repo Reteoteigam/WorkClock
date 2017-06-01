@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUESTCODE_STORAGE_PERMISSION = 0;
     private static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final int[] EXPECTED_GRANT_RESULTS = new int[]{0, 0};
+    public static boolean IS_INITIALIZED_ = false;
     private static boolean storagePermitted = false;
 
     /**
@@ -101,9 +102,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void init() {
-        File externalDir = this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-        FileService.init(externalDir);
-        ModelService.loadModel();
+
+
+        if (!IS_INITIALIZED_) {
+            File externalDir = this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            FileService.init(externalDir);
+            ModelService.loadModel();
+            IS_INITIALIZED_ = true;
+
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
     }
 
     public void sendMessage(View View) {
@@ -127,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
     public void exit(View view) {
 
         Log.i(DisplayMessageActivity.class.getSimpleName(), "exit button was tapped");
+        ModelService.saveModel(true);
+        this.getSharedPreferences("WorkClockPrefs", 0).edit().clear();
         this.finish();
     }
 

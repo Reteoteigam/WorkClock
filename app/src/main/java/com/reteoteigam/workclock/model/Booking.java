@@ -1,13 +1,10 @@
 package com.reteoteigam.workclock.model;
 
-import java.text.SimpleDateFormat;
-
 /**
  * Created by Sammy on 30.05.2017.
  */
 
 public class Booking {
-
 
     private String name;
     private String content;
@@ -39,10 +36,8 @@ public class Booking {
 
     @Override
     public String toString() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
 
-
-        String result = time + ModelService.DELIMITER + name + ModelService.DELIMITER + content.replaceAll("\n", "\\\\\\\\n");
+        String result = String.format("time: %s name: %s content: %n", time, name, content);
         return result;
     }
 }
