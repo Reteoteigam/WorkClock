@@ -3,25 +3,41 @@ package com.reteoteigam.workclock;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.TextView;
 
+import com.reteoteigam.workclock.logic.utils.FileService;
+import com.reteoteigam.workclock.model.Booking;
+import com.reteoteigam.workclock.model.ModelService;
+
+import java.io.File;
+
 public class DisplayMessageActivity extends AppCompatActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_message);
 
-
-        // Get the Intent that started this activity and extract the string
-        Intent intent = getIntent();
-        String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-
-        // Capture the layout's TextView and set the string as its text
+        Booking currentBooking = ModelService.getModel().peek();
         TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText(message);
+        String text = ModelService.formatTimeToHHmm(currentBooking.getTime()) + "\n" + currentBooking.getName() + "\n" + currentBooking.getDescription();
 
+        textView.setText(text);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        File storage = FileService.createFile(this.getString(R.string.fileName_storage));
+        ModelService.writeModel(ModelService.getModel(), storage, false);
+        super.onDestroy();
+    }
+
+    public void gotoEditor(View view) {
+        Intent intent = new Intent(this, EditorActivity.class);
+        startActivity(intent);
     }
 
 
