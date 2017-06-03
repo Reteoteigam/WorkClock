@@ -37,6 +37,7 @@ public class SpinnerSelectListener implements AdapterView.OnItemSelectedListener
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+        parent.getAdapter();
 
     }
 }

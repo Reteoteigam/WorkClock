@@ -37,7 +37,7 @@ public class Booking {
     @Override
     public String toString() {
 
-        String result = String.format("time: %s name: %s content: %n", time, name, content);
+        String result = ModelService.lineFromModel(this, true);
         return result;
     }
 }
