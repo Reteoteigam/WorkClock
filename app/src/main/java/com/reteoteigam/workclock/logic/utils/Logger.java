@@ -9,8 +9,8 @@ public class Logger {
         setOldCompatible(isOldCompatible);
     }
 
-    public static void setOldCompatible(boolean useComaptible) {
-        isUseCompatible = useComaptible;
+    public static void setOldCompatible(boolean isUseCompatible) {
+        Logger.isUseCompatible = isUseCompatible;
     }
 
     private static String getTagName(String tagName) {

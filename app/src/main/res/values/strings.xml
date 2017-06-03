@@ -3,8 +3,6 @@
     <string name="edit_name">Enter a Name</string>
     <string name="edit_description">Enter a description</string>
     <string name="button_send">send</string>
-    <string name="properties_file">knownNames.txt</string>
-    <string name="button_edit">edit File</string>
     <string name="button_ExportAndExit">exit</string>
     <string name="properties">data</string>
     <string name="spinner_description">Click a target</string>
@@ -13,16 +11,6 @@
     <string name="fileName_storage">storage.csv</string>
     <string name="fileName_export">export.txt</string>
 
-    <string-array name="planets_array">
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-    </string-array>
 
 
 </resources>
