@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void exitApplication(View view) {
+    public void exportAndExit(View view) {
         File storage = FileService.createFile(this.getString(R.string.fileName_export));
         ModelService.writeModel(ModelService.getModel(), storage, true);
         this.getSharedPreferences("WorkClockPrefs", 0).edit().clear();
