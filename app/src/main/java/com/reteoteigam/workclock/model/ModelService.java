@@ -120,7 +120,7 @@ public class ModelService {
         }
         result = time + DELIMITER;
         result = result + booking.getName() + DELIMITER;
-        String multilineContent = escapeNewLines(booking.getContent());
+        String multilineContent = escapeNewLines(booking.getDescription());
         result = result + multilineContent;
         result = result + "\n";
         return result;
@@ -139,24 +139,23 @@ public class ModelService {
         return result;
     }
 
-    public static String[] getLastEntries(Stack<Booking> bookings, int count) {
-        String[] last5;
+    public static Booking[] getLastEntries(Stack<Booking> bookings, int count) {
+        Booking[] last5;
         if (bookings == null || count <= 1) {
-            last5 = new String[0];
+            last5 = new Booking[0];
         } else {
             int indexBookings = bookings.size() - 1;
             int begin = indexBookings - count;
             if (begin < 0) {
                 begin = 0;
-                last5 = new String[indexBookings + 1];
+                last5 = new Booking[indexBookings + 1];
             } else {
-                last5 = new String[count];
+                last5 = new Booking[count];
             }
             int indexArray = 0;
             while (indexArray < count && begin <= indexBookings) {
                 Booking last = bookings.get(indexBookings);
-                String lastName = last.getName();
-                last5[indexArray] = lastName;
+                last5[indexArray] = last;
                 indexBookings--;
                 indexArray++;
             }

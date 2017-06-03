@@ -22,7 +22,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
 
         Booking currentBooking = ModelService.getModel().peek();
         TextView textView = (TextView) findViewById(R.id.textView);
-        String text = ModelService.formatTimeToHHmm(currentBooking.getTime()) + "\n" + currentBooking.getName() + "\n" + currentBooking.getContent();
+        String text = ModelService.formatTimeToHHmm(currentBooking.getTime()) + "\n" + currentBooking.getName() + "\n" + currentBooking.getDescription();
 
         textView.setText(text);
 

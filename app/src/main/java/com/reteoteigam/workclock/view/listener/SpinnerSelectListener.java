@@ -4,25 +4,34 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.reteoteigam.workclock.model.Booking;
+
 /**
  * Created by Sammy on 02.06.2017.
  */
 
 public class SpinnerSelectListener implements AdapterView.OnItemSelectedListener {
 
-    private TextView textView;
+    private TextView name;
+    private TextView description;
 
-    public SpinnerSelectListener(View view) {
-        this.textView = (TextView) view;
+    public SpinnerSelectListener(View name, View description) {
+
+        this.name = (TextView) name;
+        this.description = (TextView) description;
 
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (view instanceof TextView) {
-            TextView newText = (TextView) view;
-            textView.setText(newText.getText());
+        Object item = parent.getAdapter().getItem(position);
+        if (item instanceof Booking) {
+            Booking booking = (Booking) item;
+
+            name.setText(booking.getName());
+            description.setText(booking.getDescription());
         }
+
 
     }
 

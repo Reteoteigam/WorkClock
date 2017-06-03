@@ -77,13 +77,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
-        String[] items = ModelService.getLastEntries(ModelService.getModel(), 3);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        Booking[] items = ModelService.getLastEntries(ModelService.getModel(), 3);
+        ArrayAdapter<Booking> adapter = new ArrayAdapter<Booking>(this,
                 android.R.layout.simple_spinner_item, items);
 // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new SpinnerSelectListener(findViewById(R.id.name)));
+        spinner.setOnItemSelectedListener(new SpinnerSelectListener(findViewById(R.id.name), findViewById(R.id.description)));
 
     }
 

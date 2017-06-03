@@ -18,7 +18,7 @@ public class Booking {
         this.name = name;
     }
 
-    public String getContent() {
+    public String getDescription() {
         return content;
     }
 
