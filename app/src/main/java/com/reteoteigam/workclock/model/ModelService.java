@@ -1,6 +1,5 @@
 package com.reteoteigam.workclock.model;
 
-import com.reteoteigam.workclock.logic.utils.FileService;
 import com.reteoteigam.workclock.logic.utils.Logger;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -11,8 +10,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Stack;
 
 /**
  * Created by Sammy on 28.05.2017.
@@ -21,62 +20,79 @@ import java.util.Date;
 
 public class ModelService {
 
-
     public static final String DELIMITER = ";";
-    private static final String FILE_NAME_STORAGE = "storage.txt";
-    private static final String FILE_NAME_EXPORT = "storage.csv";
-    private static ArrayList<Booking> bookingList = new ArrayList<>();
 
-    public static void loadModel() {
-        File resourceFile = new File(FileService.getExternalDir(), FILE_NAME_STORAGE);
-        try {
-            FileReader fileReader = new FileReader(resourceFile);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            loadIn(bookingList, bufferedReader);
-            bufferedReader.close();
 
-        } catch (IOException e) {
-            Logger.i(ModelService.class, e.getMessage());
-            e.printStackTrace();
-        }
+    private static Stack<Booking> model = new Stack<>();
+
+    public static void init(File storage) {
+        boolean correct = ModelService.readValidModel(storage, model);
+        Logger.i(ModelService.class, String.format("Initial reading of model from File was correct:[%s]", correct));
+
     }
 
-    public static void loadIn(ArrayList<Booking> bookingList, BufferedReader bufferedReader) throws IOException {
+    public static boolean readValidModel(File source, Stack<Booking> target) {
+        boolean isValid = target != null && source != null && source.exists();
+        if (isValid) {
+            try {
+                FileReader fileReader = new FileReader(source);
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                readValidModel(bufferedReader, target);
+                bufferedReader.close();
 
-        while (bufferedReader.ready()) {
-            String line = bufferedReader.readLine();
+            } catch (IOException e) {
+                Logger.i(ModelService.class, e.getMessage());
+                e.printStackTrace();
+            }
+            target.trimToSize();
+        }
+        return isValid;
+    }
+
+    public static boolean readValidModel(BufferedReader source, Stack<Booking> target) throws IOException {
+
+        boolean isValid = false;
+
+        while (source.ready()) {
+            String line = source.readLine();
+
             Booking booking = new Booking();
-            loadIn(booking, line);
-            bookingList.add(booking);
+            boolean wasValid = readValidModel(line, booking);
+            if (wasValid) {
+                target.add(booking);
+            }
+            isValid = isValid && wasValid;
         }
 
-
+        return isValid;
     }
 
-    public static void loadIn(Booking booking, String line) throws IOException {
-
-        String[] values = line.split(DELIMITER);
-        if (values.length == 3 && NumberUtils.isNumber(values[0])) {
-
-            booking.setTime(Long.valueOf(values[0]));
-            booking.setName(String.valueOf(values[1]));
-            String multiLineContent = String.valueOf(values[2]).replaceAll("\\\\\\\\r\\\\\\\\n", "\n");
-            booking.setContent(multiLineContent);
-        } else {
-            Logger.i(ModelService.class, "Booking is invalid: " + line);
+    public static boolean readValidModel(String source, Booking target) {
+        boolean isValid = target != null && source != null;
+        if (isValid) {
+            String[] values = source.split(DELIMITER);
+            isValid = isValid && values.length == 3 && NumberUtils.isNumber(values[0]);
+            if (isValid) {
+                Long time = Long.valueOf(values[0]);
+                isValid = time >= 0;
+                target.setTime(time);
+                String name = String.valueOf(values[1]);
+                isValid = isValid && name.length() >= 1;
+                target.setName(String.valueOf(values[1]));
+                String multiLineContent = String.valueOf(values[2]).replaceAll("\\\\n", "\n");
+                isValid = isValid && multiLineContent.length() >= 1;
+                target.setContent(multiLineContent);
+            }
         }
+        return isValid;
     }
 
-    public static void saveModel(Boolean readAble) {
-        File targetFile;
-        if (readAble) {
-            targetFile = new File(FileService.getExternalDir(), FILE_NAME_EXPORT);
-        } else {
-            targetFile = new File(FileService.getExternalDir(), FILE_NAME_STORAGE);
-        }
+    public static void writeModel(Stack<Booking> bookingList, File target, Boolean readAble) {
+
+
         try {
-            FileWriter fileWriter = new FileWriter(targetFile);
-            saveIn(bookingList, fileWriter, readAble);
+            FileWriter fileWriter = new FileWriter(target);
+            writeModel(bookingList, fileWriter, readAble);
             fileWriter.close();
 
         } catch (IOException e) {
@@ -85,39 +101,36 @@ public class ModelService {
         }
     }
 
-    public static void saveIn(ArrayList<Booking> bookingList, FileWriter fileWriter, Boolean readAble) throws IOException {
+    public static void writeModel(Stack<Booking> bookingList, FileWriter target, Boolean readAble) throws IOException {
+
         for (Booking booking : bookingList) {
-            saveIn(booking, fileWriter, readAble);
-            fileWriter.write("\r\n");
+            String line = lineFromModel(booking, readAble);
+            target.write(line);
         }
     }
 
-    public static void saveIn(Booking booking, FileWriter fileWriter, Boolean readAble) throws IOException {
+    public static String lineFromModel(Booking booking, Boolean readAble) {
+        String result;
+
         String time;
         if (readAble) {
             time = formatTimeToHHmm(booking.getTime());
         } else {
             time = String.valueOf(booking.getTime());
         }
-        fileWriter.write(time + DELIMITER);
-        fileWriter.write(booking.getName() + DELIMITER);
-        String nultilineContent = escapeMultineContent(booking.getContent());
-        fileWriter.write(nultilineContent + DELIMITER);
+        result = time + DELIMITER;
+        result = result + booking.getName() + DELIMITER;
+        String multilineContent = escapeNewLines(booking.getContent());
+        result = result + multilineContent;
+        result = result + "\n";
+        return result;
     }
 
-    private static String escapeMultineContent(String content) {
+    private static String escapeNewLines(String content) {
         String result = content.replaceAll("(\\r|\\n|\\r\\n)+", "\\\\n");
         return result;
     }
 
-    public static void add(Booking booking) {
-        bookingList.add(booking);
-    }
-
-    public static Booking getLastBooking() {
-        Booking result = bookingList.get(bookingList.size() - 1);
-        return result;
-    }
 
     public static String formatTimeToHHmm(long time) {
         Date date = new Date(time);
@@ -125,4 +138,35 @@ public class ModelService {
         String result = simpleDateFormat.format(date);
         return result;
     }
+
+    public static String[] getLastEntries(Stack<Booking> bookings, int count) {
+        String[] last5;
+        if (bookings == null || count <= 1) {
+            last5 = new String[0];
+        } else {
+            int indexBookings = bookings.size() - 1;
+            int begin = indexBookings - count;
+            if (begin < 0) {
+                begin = 0;
+                last5 = new String[indexBookings + 1];
+            } else {
+                last5 = new String[count];
+            }
+            int indexArray = 0;
+            while (indexArray < count && begin <= indexBookings) {
+                Booking last = bookings.get(indexBookings);
+                String lastName = last.getName();
+                last5[indexArray] = lastName;
+                indexBookings--;
+                indexArray++;
+            }
+        }
+
+        return last5;
+    }
+
+    public static Stack<Booking> getModel() {
+        return model;
+    }
 }
+

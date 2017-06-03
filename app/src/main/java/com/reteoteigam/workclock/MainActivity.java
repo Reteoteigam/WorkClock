@@ -9,14 +9,17 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.reteoteigam.workclock.logic.utils.FileService;
 import com.reteoteigam.workclock.logic.utils.Logger;
 import com.reteoteigam.workclock.model.Booking;
 import com.reteoteigam.workclock.model.ModelService;
+import com.reteoteigam.workclock.model.ModelValidator;
+import com.reteoteigam.workclock.view.listener.SpinnerSelectListener;
 
 import java.io.File;
 
@@ -29,13 +32,9 @@ public class MainActivity extends AppCompatActivity {
     public static boolean IS_INITIALIZED_ = false;
     private static boolean storagePermitted = false;
 
-    /**
-     * Method to check whether external media available and writable. This is adapted from
-     * http://developer.android.com/guide/topics/data/data-storage.html#filesExternal
-     */
     private static void checkExternalMedia() {
-        boolean mExternalStorageAvailable = false;
-        boolean mExternalStorageWriteable = false;
+        boolean mExternalStorageAvailable;
+        boolean mExternalStorageWriteable;
         String state = Environment.getExternalStorageState();
 
         if (Environment.MEDIA_MOUNTED.equals(state)) {
@@ -49,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
             // Can't read or write
             mExternalStorageAvailable = mExternalStorageWriteable = false;
         }
-        Logger.i(MainActivity.class, "\n\nExternal Media: readable=" + mExternalStorageAvailable + " writable=" + mExternalStorageWriteable);
+        Logger.i(MainActivity.class, "External Media: readable=" + mExternalStorageAvailable + " writable=" + mExternalStorageWriteable);
     }
 
     private static void storagePermitted(Activity activity) {
@@ -76,6 +75,16 @@ public class MainActivity extends AppCompatActivity {
             init();
         }
 
+
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        String[] items = ModelService.getLastEntries(ModelService.getModel(), 3);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, items);
+// Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new SpinnerSelectListener(findViewById(R.id.name)));
+
     }
 
     @Override
@@ -86,9 +95,7 @@ public class MainActivity extends AppCompatActivity {
                         && grantResults.length == EXPECTED_GRANT_RESULTS.length
                         && grantResults[0] == EXPECTED_GRANT_RESULTS[0]
                         && grantResults[1] == EXPECTED_GRANT_RESULTS[1];
-
         Logger.i(MainActivity.class, "User grant permission:" + storagePermitted);
-
         if (storagePermitted) {
             Logger.i(MainActivity.class, "start");
             init();
@@ -97,52 +104,50 @@ public class MainActivity extends AppCompatActivity {
             Logger.i(MainActivity.class, "end");
             this.finish();
         }
-
-
     }
 
     public void init() {
-
-
         if (!IS_INITIALIZED_) {
+            //init FileService
             File externalDir = this.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
             FileService.init(externalDir);
-            ModelService.loadModel();
+            // init ModelService
+            File storage = FileService.createFile(this.getString(R.string.fileName_storage));
+            ModelService.init(storage);
             IS_INITIALIZED_ = true;
-
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
 
-    }
-
-    public void sendMessage(View View) {
-
-
-        Logger.i(MainActivity.class, "sendMessage()");
-        EditText name = (EditText) findViewById(R.id.name);
-        EditText content = (EditText) findViewById(R.id.content);
+    public void bookInput(View view) {
+        Logger.i(MainActivity.class, String.format("Call bookInput from:[%s]", view));
         Booking booking = new Booking();
         booking.setTime(System.currentTimeMillis());
-        booking.setName(name.getText().toString());
-        booking.setContent(content.getText().toString());
-        ModelService.add(booking);
+        String name = ((TextView) findViewById(R.id.name)).getText().toString();
+        String description = ((TextView) findViewById(R.id.description)).getText().toString();
 
-        Intent intent = new Intent(this, DisplayMessageActivity.class);
-        startActivity(intent);
-
+        boolean isNameValid = ModelValidator.isNotEmpty(name);
+        //TODO show the user a valid input
+        Logger.i(this.getClass(), String.format("The name is valid:[%s]", isNameValid));
+        boolean isDescriptionValid = ModelValidator.isNotEmpty(description);
+        //TODO show the user a valid input
+        Logger.i(this.getClass(), String.format("The description is valid:[%s]", isDescriptionValid));
+        if (isNameValid && isDescriptionValid) {
+            booking.setName(name);
+            booking.setContent(description);
+            ModelService.getModel().add(booking);
+            Intent intent = new Intent(this, DisplayMessageActivity.class);
+            startActivity(intent);
+        }
     }
 
 
-    public void exit(View view) {
-
-        Log.i(DisplayMessageActivity.class.getSimpleName(), "exit button was tapped");
-        ModelService.saveModel(true);
+    public void exitApplication(View view) {
+        File storage = FileService.createFile(this.getString(R.string.fileName_export));
+        ModelService.writeModel(ModelService.getModel(), storage, true);
         this.getSharedPreferences("WorkClockPrefs", 0).edit().clear();
         this.finish();
     }
+
 
 }
