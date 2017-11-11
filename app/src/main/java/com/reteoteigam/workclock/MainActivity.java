@@ -4,11 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -22,6 +24,7 @@ import com.reteoteigam.workclock.model.ModelValidator;
 import com.reteoteigam.workclock.view.listener.SpinnerSelectListener;
 
 import java.io.File;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         Booking[] items = ModelService.getLastEntries(ModelService.getModel(), 3);
-        ArrayAdapter<Booking> adapter = new ArrayAdapter<Booking>(this,
+        ArrayAdapter<Booking> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, items);
 // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             FileService.init(externalDir);
             // init ModelService
             File storage = FileService.createFile(this.getString(R.string.fileName_storage));
-            ModelService.init(storage);
+            ModelService.init(storage, this.getString(R.string.fileName_uploads));
             IS_INITIALIZED_ = true;
         }
     }
@@ -142,10 +145,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void exportAndExit(View view) {
+    public void sendAsMail(View view) {
+        ArrayList<Uri> uris = new ArrayList<>(2);
+
+        Uri uriCSV = ModelService.getUploadFrom(this.getString(R.string.fileName_storage));
+        uris.add(uriCSV);
+
         File storage = FileService.createFile(this.getString(R.string.fileName_export));
         ModelService.writeModel(ModelService.getModel(), storage, true);
-        this.getSharedPreferences("WorkClockPrefs", 0).edit().clear();
+        Uri uriTXT = ModelService.getUploadFrom(this.getString(R.string.fileName_export));
+        uris.add(uriTXT);
+
+
+        Intent i = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
+        i.setType("message/rfc822")
+                // .putExtra(Intent.EXTRA_EMAIL, new String[]{"reteoteigam@gmail.com"})
+                .putExtra(Intent.EXTRA_SUBJECT, "WorkClock_ExportAsMail")
+                .putExtra(Intent.EXTRA_TEXT, "DETAIL MESSAGE")
+                //.putExtra(Intent.EXTRA_STREAM, uriTXT);
+                .putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+        try {
+            startActivity(Intent.createChooser(i, "Send mail..."));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Log.i("sendAsMail", ex.toString());
+        }
+
+    }
+
+    public void deleteUploadsAndExit(View view) {
+
+        this.getSharedPreferences("WorkClockPrefs", 0).edit().clear().apply();
         this.finish();
     }
 

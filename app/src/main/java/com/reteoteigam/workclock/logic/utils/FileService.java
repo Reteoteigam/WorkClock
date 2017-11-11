@@ -3,11 +3,6 @@ package com.reteoteigam.workclock.logic.utils;
 import java.io.File;
 import java.io.IOException;
 
-
-/**
- * Created by Sammy on 29.05.2017.
- */
-
 public class FileService {
 
     private static File externalDirectory;
@@ -18,7 +13,7 @@ public class FileService {
             externalDirectory = externalDir;
             if (!externalDir.isDirectory()) {
                 boolean success = externalDir.mkdirs();
-                Logger.i(FileService.class, "create externalDir success " + success);
+                Logger.i(FileService.class, String.format("create externalDir success %s", success));
             }
             isInitialized = true;
         } else {
@@ -28,19 +23,29 @@ public class FileService {
 
     }
 
-    public static File getExternalDir() {
-        return externalDirectory;
+
+    public static File createDirectory(String dirName) {
+        File result = new File(externalDirectory, dirName);
+
+        if (!result.isDirectory()) {
+            boolean success = result.mkdirs();
+            Logger.i(FileService.class, String.format("create %s success %s", dirName, success));
+        }
+        return result;
     }
 
     public static File createFile(String fileName) {
-        File result = new File(getExternalDir(), fileName);
+        File result = new File(externalDirectory, fileName);
         if (!result.exists()) {
             try {
-                result.createNewFile();
+                boolean success = result.createNewFile();
+                Logger.i(FileService.class, String.format("create %s exists before:", result));
             } catch (IOException e) {
                 Logger.e(FileService.class, String.format("Creating a file:[%s] was not successful", fileName), e);
             }
         }
         return result;
     }
+
+
 }

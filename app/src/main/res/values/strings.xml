@@ -3,14 +3,15 @@
     <string name="edit_name">Enter a Name</string>
     <string name="edit_description">Enter a description</string>
     <string name="button_send">send</string>
-    <string name="button_ExportAndExit">exit</string>
+    <string name="button_mail">mail</string>
+    <string name="button_ExportAndExit">delete tmp and exit</string>
     <string name="properties">data</string>
     <string name="spinner_description">Click a target</string>
     <string name="data_storage_name">"storage.txt"</string>
     <string name="data_export_name">"storage.csv"</string>
     <string name="fileName_storage">storage.csv</string>
     <string name="fileName_export">export.txt</string>
-
+    <string name="fileName_uploads">uploads</string>
 
 
 </resources>

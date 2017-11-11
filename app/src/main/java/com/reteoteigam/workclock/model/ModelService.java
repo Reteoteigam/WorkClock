@@ -1,7 +1,11 @@
 package com.reteoteigam.workclock.model;
 
+import android.net.Uri;
+
+import com.reteoteigam.workclock.logic.utils.FileService;
 import com.reteoteigam.workclock.logic.utils.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.BufferedReader;
@@ -11,24 +15,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Stack;
-
-/**
- * Created by Sammy on 28.05.2017.
- */
 
 
 public class ModelService {
 
-    public static final String DELIMITER = ";";
+    private static final String DELIMITER = ";";
 
 
     private static Stack<Booking> model = new Stack<>();
+    private static File uploads;
 
-    public static void init(File storage) {
+    public static void init(File storage, String uploadDirName) {
         boolean correct = ModelService.readValidModel(storage, model);
         Logger.i(ModelService.class, String.format("Initial reading of model from File was correct:[%s]", correct));
-
+        uploads = FileService.createDirectory(uploadDirName);
+        uploads.deleteOnExit();
     }
 
     public static boolean readValidModel(File source, Stack<Booking> target) {
@@ -51,7 +54,7 @@ public class ModelService {
 
     public static boolean readValidModel(BufferedReader source, Stack<Booking> target) throws IOException {
 
-        boolean isValid = false;
+        boolean isValid = true;
 
         while (source.ready()) {
             String line = source.readLine();
@@ -109,7 +112,7 @@ public class ModelService {
         }
     }
 
-    public static String lineFromModel(Booking booking, Boolean readAble) {
+    static String lineFromModel(Booking booking, Boolean readAble) {
         String result;
 
         String time;
@@ -127,16 +130,16 @@ public class ModelService {
     }
 
     private static String escapeNewLines(String content) {
-        String result = content.replaceAll("(\\r|\\n|\\r\\n)+", "\\\\n");
-        return result;
+
+        return content.replaceAll("(\\r|\\n|\\r\\n)+", "\\\\n");
     }
 
 
     public static String formatTimeToHHmm(long time) {
         Date date = new Date(time);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-        String result = simpleDateFormat.format(date);
-        return result;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm", Locale.GERMANY);
+
+        return simpleDateFormat.format(date);
     }
 
     public static Booking[] getLastEntries(Stack<Booking> bookings, int count) {
@@ -166,6 +169,24 @@ public class ModelService {
 
     public static Stack<Booking> getModel() {
         return model;
+    }
+
+    public static Uri getUploadFrom(String modelFileName) {
+        File fileSource = FileService.createFile(modelFileName);
+
+
+        long time = System.currentTimeMillis();
+        SimpleDateFormat s = new SimpleDateFormat("yyyy_MM_dd", Locale.GERMANY);
+
+        String fileName = s.format(new Date(time)) + modelFileName;
+        File fileDestination = new File(uploads, fileName);
+
+        try {
+            FileUtils.copyFile(fileSource, fileDestination);
+        } catch (IOException e) {
+            Logger.d(ModelService.class, "getCurrentExport of modelFileName not work", e);
+        }
+        return Uri.fromFile(fileDestination);
     }
 }
 
